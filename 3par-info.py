@@ -42,9 +42,6 @@ class Host(object):
     def command_execute(self, command):
         if command in commands:
             commands[command](self.sshclient)
-        # execute need command
-        # like check_pd(),
-        # check_node(), etc..
 
     def close_connect(self):
         self.sshclient.close()
