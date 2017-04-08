@@ -40,7 +40,8 @@ class Host(object):
             sys.exit(1)
 
     def command_execute(self, command):
-        commands[command](self.client)
+        if command in commands:
+            commands[command](self.sshclient)
         # execute need command
         # like check_pd(),
         # check_node(), etc..
@@ -49,24 +50,61 @@ class Host(object):
         self.sshclient.close()
 
 
+def check_pd(client):
+    try:
+        stdin, stdout, stderr = client.exec_command("check_pd")
+    except client.SSHException:
+        print "Command %s fail" % "check_pd"
+
+
+def check_node(client):
+    pass
+
+
+def check_ps(client):
+    pass
+
+
+def check_ps_cage(client):
+    pass
+
+
+def check_vv(client):
+    pass
+
+
+def check_ld(client):
+    pass
+
+
+def check_port_fc(client):
+    pass
+
+
+def check_cap_fc(client):
+    pass
+
+
+def check_cap_nl(client):
+    pass
+
+
+commands = {"check_pd": check_pd,
+            "check_node": check_node,
+            "check_ps": check_ps,
+            "check_ps_cage": check_ps_cage,
+            "check_vv": check_vv,
+            "check_ld": check_ld,
+            "check_port_fc": check_port_fc,
+            "check_cap_fc": check_cap_fc,
+            "check_cap_nl": check_cap_nl}
+
+
 def main():
     if len(sys.argv) < 5:
         print "Usage:\n %s \
 <hostname > <username > <password> <command>" % sys.argv[0]
         exit(1)
-
-
-def check_pd(client):
-    try:
-        stdin, stdout, stderr = client.exec_command("check_pd")
-        data
-    except client.SSHException:
-        print "Command %s fail" % "check_pd"
-
-
-commands = {"check_pd": check_pd,
-            "check_node": check_node,
-            "check_ps": check_ps}
 
 
 if __name__ == '__main__':
