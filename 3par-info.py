@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-
-
 try:
     import paramiko
 except Exception:
@@ -10,6 +8,8 @@ except Exception:
 
 
 class Host(object):
+    "Host class contains all information needed for connect to",
+    "host via module 'paramiko'"
 
     def __init__(self, hostname, username, password, **kwarg):
         self.hostname = hostname
@@ -19,8 +19,12 @@ class Host(object):
         # check kwarg not empty and initialize a other value
         if (kwarg):
             if 'port' in kwarg:
-                self.port = int(kwarg['port'])
-
+                try:
+                    self.port = int(kwarg['port'])
+                except ValueError:
+                    print "Wrong parameter port definition"
+                    sys.exit(1)
+        self.timeout = 2
         self.sshclient = paramiko.SSHClient()
 
     def connect(self):
@@ -31,6 +35,7 @@ class Host(object):
                 hostname=self.hostname,
                 username=self.username,
                 password=self.password,
+                timeout=self.timeout,
                 port=self.port)
             return self
         except paramiko.SSHException as sshe:
@@ -40,61 +45,128 @@ class Host(object):
             sys.exit(1)
 
     def command_execute(self, command):
+        """For executing command on host need call this method with available
+        command"""
         if command in commands:
             commands[command](self.sshclient)
+        else:
+            print "Command '%s' not found" % command
 
     def close_connect(self):
+        """Close connection on host"""
         self.sshclient.close()
 
 
-def check_pd(client):
+# external methods definition
+def ssh_command_executor(sshclient, command):
+    """Execute SSH command and return buf of data or None if execution command
+    failed"""
     try:
-        stdin, stdout, stderr = client.exec_command("check_pd")
-    except client.SSHException:
-        print "Command %s fail" % "check_pd"
+        stdin, stdout, stderr = sshclient.exec_command(command)
+        buf = stdout.read()
+        return buf
+    except paramiko.SSHException:
+        print "Command '%s' not executing" % command
+        sshclient.close()
+        sys.exit(1)
 
 
-def check_node(client):
+def check_pd_worker(data):
+    ret_data = []
+    for line in data.split('\n'):
+        line = line.strip()
+        if "State" in line:     # skip header
+            continue
+        elif "degraded" in line:
+            # return data as [id, state, port]
+            ret_data.append(line.split(" "))
+        elif "failed" in line:
+            ret_data.append(line.split(" "))
+    return ret_data
+
+
+def check_node_worker(data):
+    ret_data = []
+    for line in data.split('\n'):
+        line = line.strip()
+        if "Node" in line:      # skip header
+            continue
+        elif "degraded" in line.lower():
+            ret_data.append(line.split(" "))
+        elif "failed" in line.lower():
+            ret_data.append(line.split(" "))
+    return ret_data
+
+# command definition for exec_command call
+
+
+def command_check_pd(client):
+    try:
+        data = ssh_command_executor(client,
+                                    "showpd -showcols Id,State")
+        status = check_pd_worker(data)
+        if len(status) > 0:
+            print "CRITICAL! Physical disk degraded or failed. Contact HP Support"
+            for i in status:
+                print i
+        else:
+            print "NORMAL! All physical disk is OK"
+    except paramiko.SSHException:
+        print "Command 'check_pd fail"
+
+
+def command_check_node(client):
+    try:
+        data = ssh_command_executor(client,
+                                    "shownode -showcols Node,State")
+        status = check_node_worker(data)
+        if len(status) > 0:
+            print "CRITICAL! Node failed. Contact HP Support"
+            for i in status:
+                print i
+        else:
+            print "NORMAL! All node is OK!"
+    except paramiko.SSHException:
+        print "Command 'check_node' fail"
+
+
+def command_check_ps(client):
     pass
 
 
-def check_ps(client):
+def command_check_ps_cage(client):
     pass
 
 
-def check_ps_cage(client):
+def command_check_vv(client):
     pass
 
 
-def check_vv(client):
+def command_check_ld(client):
     pass
 
 
-def check_ld(client):
+def command_check_port_fc(client):
     pass
 
 
-def check_port_fc(client):
+def command_check_cap_fc(client):
     pass
 
 
-def check_cap_fc(client):
+def command_check_cap_nl(client):
     pass
 
 
-def check_cap_nl(client):
-    pass
-
-
-commands = {"check_pd": check_pd,
-            "check_node": check_node,
-            "check_ps": check_ps,
-            "check_ps_cage": check_ps_cage,
-            "check_vv": check_vv,
-            "check_ld": check_ld,
-            "check_port_fc": check_port_fc,
-            "check_cap_fc": check_cap_fc,
-            "check_cap_nl": check_cap_nl}
+commands = {"check_pd": command_check_pd,
+            "check_node": command_check_node,
+            "check_ps": command_check_ps,
+            "check_ps_cage": command_check_ps_cage,
+            "check_vv": command_check_vv,
+            "check_ld": command_check_ld,
+            "check_port_fc": command_check_port_fc,
+            "check_cap_fc": command_check_cap_fc,
+            "check_cap_nl": command_check_cap_nl}
 
 
 def main():
@@ -111,3 +183,4 @@ if __name__ == '__main__':
     host.connect()
     host.command_execute(sys.argv[4])
     host.close_connect()
+    sys.exit(0)
