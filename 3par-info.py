@@ -75,12 +75,12 @@ def check_pd_worker(data):
     ret_data = []
     for line in data.split('\n'):
         line = line.strip()
-        if "State" in line:     # skip header
-            continue
-        elif "degraded" in line:
+        if "State" in line:     # adding header for printing
+            ret_data.append(line.split(" "))
+        elif "degraded" in line.lower():
             # return data as [id, state, port]
             ret_data.append(line.split(" "))
-        elif "failed" in line:
+        elif "failed" in line.lower():
             ret_data.append(line.split(" "))
     return ret_data
 
@@ -89,12 +89,30 @@ def check_node_worker(data):
     ret_data = []
     for line in data.split('\n'):
         line = line.strip()
-        if "Node" in line:      # skip header
-            continue
+        if "Node" in line:      # adding header for printing
+            ret_data.append(line.split(" "))
         elif "degraded" in line.lower():
             ret_data.append(line.split(" "))
         elif "failed" in line.lower():
             ret_data.append(line.split(" "))
+    return ret_data
+
+
+def check_ps_worker(data):
+    ret_data = []
+    for line in data.split('\n'):
+        line = line.strip()
+        if "Node" in line:
+            ret_data.append(line.split(" "))
+        elif "degraded" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+        elif "failed" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+        elif "notpresent" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
     return ret_data
 
 # command definition for exec_command call
@@ -105,7 +123,7 @@ def command_check_pd(client):
         data = ssh_command_executor(client,
                                     "showpd -showcols Id,State")
         status = check_pd_worker(data)
-        if len(status) > 0:
+        if len(status) > 1:
             print "CRITICAL! Physical disk degraded or failed. Contact HP Support"
             for i in status:
                 print i
@@ -120,7 +138,7 @@ def command_check_node(client):
         data = ssh_command_executor(client,
                                     "shownode -showcols Node,State")
         status = check_node_worker(data)
-        if len(status) > 0:
+        if len(status) > 1:
             print "CRITICAL! Node failed. Contact HP Support"
             for i in status:
                 print i
@@ -131,7 +149,18 @@ def command_check_node(client):
 
 
 def command_check_ps(client):
-    pass
+    try:
+        data = ssh_command_executor(client,
+                                    "shownode -ps -showcols Node,PS,ACState,DCState,PSState")
+        status = check_ps_worker(data)
+        if len(status) > 1:
+            print "CRITICAL! Power suply degraded. Contact HP Support"
+            for i in status:
+                print i
+        else:
+            print "NORMAL! All power supply works fine"
+    except paramiko.SSHException:
+        print "Command 'check_ps' fail"
 
 
 def command_check_ps_cage(client):
