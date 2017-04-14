@@ -115,6 +115,38 @@ def check_ps_worker(data):
             ret_data.append(str_list)
     return ret_data
 
+
+def check_vv_worker(data):
+    ret_data = []
+    for line in data.split('\n'):
+        line = line.strip()
+        if "Name" in line:
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+        elif "degraded" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+        elif "failed" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+    return ret_data
+
+
+def check_ld_worker(data):
+    ret_data = []
+    for line in data.split('\n'):
+        line = line.strip()
+        if "Name" in line:
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+        elif "degraded" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+        elif "failed" in line.lower():
+            str_list = filter(None, line.split(" "))
+            ret_data.append(str_list)
+    return ret_data
+
 # command definition for exec_command call
 
 
@@ -168,11 +200,33 @@ def command_check_ps_cage(client):
 
 
 def command_check_vv(client):
-    pass
+    try:
+        data = ssh_command_executor(client,
+                                    "showvv -showcols Name,State")
+        status = check_vv_worker(data)
+        if len(status) > 1:
+            print "CRITICAL! Virtual volume degraded. Contact HP Support"
+            for i in status:
+                print i
+        else:
+            print "NORMAL! All virtual volume works fine"
+    except paramiko.SSHException:
+        print "Command 'check_vv' fail"
 
 
 def command_check_ld(client):
-    pass
+    try:
+        data = ssh_command_executor(client,
+                                    "showld -state")
+        status = check_ld_worker(data)
+        if len(status) > 1:
+            print "CRITICAL! Logical Disk degraded. Contact HP Support"
+            for i in status:
+                print i
+        else:
+            print "NORMAL! All logical disk works fine"
+    except paramiko.SSHException:
+        print "Command 'check_ld' fail"
 
 
 def command_check_port_fc(client):
