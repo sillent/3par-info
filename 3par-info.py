@@ -4,7 +4,7 @@ import sys
 try:
     import paramiko
 except Exception:
-    print "Error. Can't import module 'paramiko'. Exiting."
+    print("Error. Cant import module paramiko. Exiting")
 
 
 class Host(object):
@@ -22,7 +22,7 @@ class Host(object):
                 try:
                     self.port = int(kwarg['port'])
                 except ValueError:
-                    print "Wrong parameter port definition"
+                    print("Wrong parameter port definition")
                     sys.exit(1)
         self.timeout = 2
         self.sshclient = paramiko.SSHClient()
@@ -39,8 +39,8 @@ class Host(object):
                 port=self.port)
             return self
         except paramiko.SSHException as sshe:
-            print "Can't connect to host"
-            print sshe
+            print("Can't connect to host")
+            print(sshe)
             self.sshclient.close()
             sys.exit(1)
 
@@ -50,7 +50,7 @@ class Host(object):
         if command in commands:
             commands[command](self.sshclient)
         else:
-            print "Command '%s' not found" % command
+            print("Command '%s' not found" % command)
 
     def close_connect(self):
         """Close connection on host"""
@@ -66,14 +66,14 @@ def ssh_command_executor(sshclient, command):
         buf = stdout.read()
         return buf
     except paramiko.SSHException:
-        print "Command '%s' not executing" % command
+        print("Command '%s' not executing" % command)
         sshclient.close()
         sys.exit(1)
 
 
 def check_pd_worker(data):
     ret_data = []
-    for line in data.split('\n'):
+    for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "State" in line:     # adding header for printing
             ret_data.append(line.split(" "))
@@ -87,7 +87,7 @@ def check_pd_worker(data):
 
 def check_node_worker(data):
     ret_data = []
-    for line in data.split('\n'):
+    for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "Node" in line:      # adding header for printing
             ret_data.append(line.split(" "))
@@ -100,7 +100,7 @@ def check_node_worker(data):
 
 def check_ps_worker(data):
     ret_data = []
-    for line in data.split('\n'):
+    for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "Node" in line:
             ret_data.append(line.split(" "))
@@ -118,7 +118,7 @@ def check_ps_worker(data):
 
 def check_vv_worker(data):
     ret_data = []
-    for line in data.split('\n'):
+    for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "Name" in line:
             str_list = filter(None, line.split(" "))
@@ -134,7 +134,7 @@ def check_vv_worker(data):
 
 def check_ld_worker(data):
     ret_data = []
-    for line in data.split('\n'):
+    for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "Name" in line:
             str_list = filter(None, line.split(" "))
@@ -156,13 +156,13 @@ def command_check_pd(client):
                                     "showpd -showcols Id,State")
         status = check_pd_worker(data)
         if len(status) > 1:
-            print "CRITICAL! Physical disk degraded or failed. Contact HP Support"
+            print("CRITICAL! Physical disk degraded or failed. Contact HP Support")
             for i in status:
-                print i
+                print(i)
         else:
-            print "NORMAL! All physical disk is OK"
+            print("NORMAL! All physical disk is OK")
     except paramiko.SSHException:
-        print "Command 'check_pd fail"
+        print("Command 'check_pd fail")
 
 
 def command_check_node(client):
@@ -171,13 +171,13 @@ def command_check_node(client):
                                     "shownode -showcols Node,State")
         status = check_node_worker(data)
         if len(status) > 1:
-            print "CRITICAL! Node failed. Contact HP Support"
+            print("CRITICAL! Node failed. Contact HP Support")
             for i in status:
-                print i
+                print(i)
         else:
-            print "NORMAL! All node is OK!"
+            print("NORMAL! All node is OK!")
     except paramiko.SSHException:
-        print "Command 'check_node' fail"
+        print("Command 'check_node' fail")
 
 
 def command_check_ps(client):
@@ -186,13 +186,13 @@ def command_check_ps(client):
                                     "shownode -ps -showcols Node,PS,ACState,DCState,PSState")
         status = check_ps_worker(data)
         if len(status) > 1:
-            print "CRITICAL! Power suply degraded. Contact HP Support"
+            print("CRITICAL! Power suply degraded. Contact HP Support")
             for i in status:
-                print i
+                print(i)
         else:
-            print "NORMAL! All power supply works fine"
+            print("NORMAL! All power supply works fine")
     except paramiko.SSHException:
-        print "Command 'check_ps' fail"
+        print("Command 'check_ps' fail")
 
 
 def command_check_ps_cage(client):
@@ -205,13 +205,13 @@ def command_check_vv(client):
                                     "showvv -showcols Name,State")
         status = check_vv_worker(data)
         if len(status) > 1:
-            print "CRITICAL! Virtual volume degraded. Contact HP Support"
+            print("CRITICAL! Virtual volume degraded. Contact HP Support")
             for i in status:
-                print i
+                print(i)
         else:
-            print "NORMAL! All virtual volume works fine"
+            print("NORMAL! All virtual volume works fine")
     except paramiko.SSHException:
-        print "Command 'check_vv' fail"
+        print("Command 'check_vv' fail")
 
 
 def command_check_ld(client):
@@ -220,13 +220,13 @@ def command_check_ld(client):
                                     "showld -state")
         status = check_ld_worker(data)
         if len(status) > 1:
-            print "CRITICAL! Logical Disk degraded. Contact HP Support"
+            print("CRITICAL! Logical Disk degraded. Contact HP Support")
             for i in status:
-                print i
+                print(i)
         else:
-            print "NORMAL! All logical disk works fine"
+            print("NORMAL! All logical disk works fine")
     except paramiko.SSHException:
-        print "Command 'check_ld' fail"
+        print("Command 'check_ld' fail")
 
 
 def command_check_port_fc(client):
@@ -254,8 +254,11 @@ commands = {"check_pd": command_check_pd,
 
 def main():
     if len(sys.argv) < 5:
-        print "Usage:\n %s \
-<hostname > <username > <password> <command>" % sys.argv[0]
+        print("Usage:\n %s \
+<hostname > <username > <password> <command>" % sys.argv[0])
+        print("command: ")
+        for command in commands:
+            print("\t%s" % command)
         exit(1)
 
 
