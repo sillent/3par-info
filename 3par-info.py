@@ -241,6 +241,9 @@ def command_check_ld(client):
         print("Command 'check_ld' fail")
 
 
+# TODO: implement this function
+
+
 def command_check_port_fc(client):
     pass
 
@@ -275,10 +278,11 @@ def main():
 
 
 if __name__ == '__main__':
-    # passw = raw_input("Vvedite parol: ")
     main()
-    host = Host(sys.argv[1], sys.argv[2], sys.argv[3])
+    script, hostname, username, password, command = sys.argv
+    # host = Host(sys.argv[1], sys.argv[2], sys.argv[3])
+    host = Host(hostname, username, password)
     host.connect()
-    host.command_execute(sys.argv[4])
+    host.command_execute(command)
     host.close_connect()
     sys.exit(0)
