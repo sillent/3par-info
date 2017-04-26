@@ -7,11 +7,14 @@ The writing of this program was inspired
 ## Usage
 Script must be running like this:
 `./3par-info.py <hostname> <username> <password> <command>`
+
 Where:
-`hostname` - IP or domain name of 3PAR CLI management interface
-`username` - user name
-`password` - password
-`command` - guess?       Yes, command that need to be executed
+```
+hostname - IP or domain name of 3PAR CLI management interface
+username - user name
+password - password
+command - guess?       Yes, command that need to be executed
+```
 ## Supporting command for monitoring
 * check_pd
 That command execute 'showpd' for getting information about Physical disk
@@ -25,6 +28,6 @@ That command execute 'showvv' for getting information about Virtual Volume
 That command execute 'showld' for getting information about Logical Disk
 
 ## Not implemented command
-- [] check_port_fc
-- [] check_cap_fc
-- [] check_cap_nl
+- [ ] check_port_fc
+- [ ] check_cap_fc
+- [ ] check_cap_nl
