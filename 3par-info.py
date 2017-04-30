@@ -21,7 +21,7 @@ except Exception:
 ARG_COUNT = 5
 degrad = "degraded"
 fail = "failed"
-npres = "notpresen"
+npres = "notpresent"
 
 # messages:
 critical = "CRITICAL! "
