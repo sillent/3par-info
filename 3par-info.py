@@ -290,7 +290,7 @@ def main():
         print("command: ")
         for command in commands:
             print("\t%s" % command)
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
