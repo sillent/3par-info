@@ -121,6 +121,10 @@ def check_node_worker(data):
     return ret_data
 
 
+def filter_fun(line):
+    return filter(None, line.split(" "))
+
+
 def check_ps_worker(data):
     ret_data = []
     for line in (data.decode("utf-8")).split('\n'):
@@ -128,13 +132,13 @@ def check_ps_worker(data):
         if "Node" in line:
             ret_data.append(line.split(" "))
         elif degrad in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
         elif fail in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
         elif npres in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
     return ret_data
 
@@ -144,13 +148,13 @@ def check_vv_worker(data):
     for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "Name" in line:
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
         elif degrad in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
         elif fail in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
     return ret_data
 
@@ -160,13 +164,13 @@ def check_ld_worker(data):
     for line in (data.decode("utf-8")).split('\n'):
         line = line.strip()
         if "Name" in line:
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
         elif degrad in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
         elif fail in line.lower():
-            str_list = filter(None, line.split(" "))
+            str_list = filter_fun(line)
             ret_data.append(str_list)
     return ret_data
 
