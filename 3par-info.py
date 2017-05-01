@@ -46,16 +46,9 @@ class Host(object):
         self.hostname = hostname
         self.username = username
         self.password = password
-        self.port = 22
-        # check kwarg not empty and initialize a other value
-        if (kwarg):
-            if 'port' in kwarg:
-                try:
-                    self.port = int(kwarg['port'])
-                except ValueError:
-                    print("Wrong parameter port definition")
-                    sys.exit(1)
-        self.timeout = 2
+        self.port = kwarg.get("port", 22)
+        self.timeout = kwarg.get("timeout", 2)
+        # initialize paramiko SSHClient
         self.sshclient = paramiko.SSHClient()
 
     def connect(self):
