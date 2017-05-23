@@ -13,6 +13,7 @@
 # GNU General Public License for more details.
 
 import sys
+import re
 try:
     import paramiko
 except Exception:
@@ -174,6 +175,32 @@ def check_ld_worker(data):
             ret_data.append(str_list)
     return ret_data
 
+
+def stat_cpu_worker(data):
+    node_usr = {}
+    node_sys = {}
+    node_idl = {}
+    node_intr = {}
+    node_ctxt = {}
+    ret_data = []
+    reg = re.compile("\d,total")
+
+    for line in (data.decode("utf-8")).split('\n'):
+        line = line.strip()
+        if reg.match(line):
+            line_sep = filter_fun(line)
+
+            node_usr[int(line[0])] = int(line_sep[1])
+            node_sys[int(line[0])] = int(line_sep[2])
+            node_idl[int(line[0])] = int(line_sep[3])
+            node_intr[int(line[0])] = int(line_sep[4])
+            node_ctxt[int(line[0])] = int(line_sep[5])
+    ret_data.append({'usr': node_usr})
+    ret_data.append({'sys': node_sys})
+    ret_data.append({'idl': node_idl})
+    ret_data.append({'intr': node_intr})
+    ret_data.append({'ctxt': node_ctxt})
+    return ret_data
 # command definition for exec_command call
 
 
@@ -272,6 +299,23 @@ def command_check_cap_nl(client):
     pass
 
 
+def stat_cpu(client):
+    try:
+        # show only total cpu usage for node
+        data = ssh_command_executor(client,
+                                    "statcpu -iter 1 -t")
+        status = stat_cpu_worker(data)
+        len_of_node = len(status[0]['usr'])
+        ret_data_substr = ", "
+        arr_of_node_count = []
+        for coun in range(len_of_node):
+            arr_of_node_count.append('{"{#NODELEN}": "%d"}' % coun)
+        print('{"data"}:[%s]}' % ret_data_substr.join(arr_of_node_count))
+        # print('{"data":[{"{#NODELEN}": "%s"}]}' % len_of_node)
+    except paramiko.SSHException:
+        print("Command 'stat_cpu' fail")
+
+
 commands = {"check_pd": command_check_pd,
             "check_node": command_check_node,
             "check_ps": command_check_ps,
@@ -280,7 +324,8 @@ commands = {"check_pd": command_check_pd,
             "check_ld": command_check_ld,
             "check_port_fc": command_check_port_fc,
             "check_cap_fc": command_check_cap_fc,
-            "check_cap_nl": command_check_cap_nl}
+            "check_cap_nl": command_check_cap_nl,
+            "stat_cpu": stat_cpu}
 
 
 def main():
