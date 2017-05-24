@@ -11,7 +11,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+from __future__ import print_function
 import sys
 import re
 import pickle
@@ -191,12 +191,19 @@ def stat_cpu_worker(data):
         line = line.strip()
         if reg.match(line):
             line_sep = filter_fun(line)
-            node_id = next(line_sep)
-            node_usr[int(line[0])] = next(line_sep)
-            node_sys[int(line[0])] = next(line_sep)
-            node_idl[int(line[0])] = next(line_sep)
-            node_intr[int(line[0])] = next(line_sep)
-            node_ctxt[int(line[0])] = next(line_sep)
+            if sys.version_info[0] == 2:
+                node_usr[int(line[0])] = int(line_sep[1])
+                node_sys[int(line[0])] = int(line_sep[2])
+                node_idl[int(line[0])] = int(line_sep[3])
+                node_intr[int(line[0])] = int(line_sep[4])
+                node_ctxt[int(line[0])] = int(line_sep[5])
+            elif sys.version_info[0] == 3:
+                node_id = next(line_sep)
+                node_usr[int(line[0])] = next(line_sep)
+                node_sys[int(line[0])] = next(line_sep)
+                node_idl[int(line[0])] = next(line_sep)
+                node_intr[int(line[0])] = next(line_sep)
+                node_ctxt[int(line[0])] = next(line_sep)
     ret_data.append({'usr': node_usr})
     ret_data.append({'sys': node_sys})
     ret_data.append({'idl': node_idl})
@@ -309,9 +316,8 @@ def stat_cpu_write_file(data):
         # pickling data into file
         with open(stat_cpu_file_name, "wb") as fi:
             pickle.dump(data, fi, protocol=0)
-    except Exception as e:
+    except Exception:
         print("Cannot open file %s for writing" % stat_cpu_file_name)
-        print(e)
 
 
 def stat_cpu(client):
@@ -329,8 +335,10 @@ def stat_cpu(client):
         # return data for discovering zabbix
         for coun in range(len_of_node):
             arr_of_node_count.append('{"{#NODELEN}": "%d"}' % coun)
-        print('{"data"}:[%s]}' % ret_data_substr.join(arr_of_node_count))
-        # print('{"data":[{"{#NODELEN}": "%s"}]}' % len_of_node)
+
+        ret_str = '{"data":[%s]}' % ret_data_substr.join(arr_of_node_count)
+        # python3 print
+        print(ret_str, end='')
     except paramiko.SSHException:
         print("Command 'stat_cpu' fail")
 
