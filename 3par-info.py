@@ -20,7 +20,7 @@ try:
 except Exception:
     print("Error. Cant import module paramiko. Exiting")
 
-_3par_host = sys.argv[1]
+
 ARG_COUNT = 5
 degrad = "degraded"
 fail = "failed"
@@ -191,12 +191,12 @@ def stat_cpu_worker(data):
         line = line.strip()
         if reg.match(line):
             line_sep = filter_fun(line)
-
-            node_usr[int(line[0])] = int(line_sep[1])
-            node_sys[int(line[0])] = int(line_sep[2])
-            node_idl[int(line[0])] = int(line_sep[3])
-            node_intr[int(line[0])] = int(line_sep[4])
-            node_ctxt[int(line[0])] = int(line_sep[5])
+            node_id = next(line_sep)
+            node_usr[int(line[0])] = next(line_sep)
+            node_sys[int(line[0])] = next(line_sep)
+            node_idl[int(line[0])] = next(line_sep)
+            node_intr[int(line[0])] = next(line_sep)
+            node_ctxt[int(line[0])] = next(line_sep)
     ret_data.append({'usr': node_usr})
     ret_data.append({'sys': node_sys})
     ret_data.append({'idl': node_idl})
@@ -302,13 +302,16 @@ def command_check_cap_nl(client):
 
 
 def stat_cpu_write_file(data):
+    '''xWrite data into file with pickling them before.'''
+    _3par_host = sys.argv[1]
     stat_cpu_file_name = "/tmp/%s-cpu.stat" % _3par_host
     try:
         # pickling data into file
-        with open(stat_cpu_file_name, "w") as fi:
-            pickle.dump(data, fi)
-    except Exception:
+        with open(stat_cpu_file_name, "wb") as fi:
+            pickle.dump(data, fi, protocol=0)
+    except Exception as e:
         print("Cannot open file %s for writing" % stat_cpu_file_name)
+        print(e)
 
 
 def stat_cpu(client):
