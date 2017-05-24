@@ -12,8 +12,6 @@ def parse(data, typ, node):
                 ret = d[typ][node]
             except KeyError:
                 ret = 0
-        else:
-            ret = 0
     print(ret)
 
 
