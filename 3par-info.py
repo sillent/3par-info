@@ -14,11 +14,13 @@
 
 import sys
 import re
+import pickle
 try:
     import paramiko
 except Exception:
     print("Error. Cant import module paramiko. Exiting")
 
+_3par_host = sys.argv[1]
 ARG_COUNT = 5
 degrad = "degraded"
 fail = "failed"
@@ -299,6 +301,16 @@ def command_check_cap_nl(client):
     pass
 
 
+def stat_cpu_write_file(data):
+    stat_cpu_file_name = "/tmp/%s-cpu.stat" % _3par_host
+    try:
+        # pickling data into file
+        with open(stat_cpu_file_name, "w") as fi:
+            pickle.dump(data, fi)
+    except Exception:
+        print("Cannot open file %s for writing" % stat_cpu_file_name)
+
+
 def stat_cpu(client):
     try:
         # show only total cpu usage for node
@@ -308,6 +320,10 @@ def stat_cpu(client):
         len_of_node = len(status[0]['usr'])
         ret_data_substr = ", "
         arr_of_node_count = []
+        # write status data to store values of cpu load
+        stat_cpu_write_file(status)
+
+        # return data for discovering zabbix
         for coun in range(len_of_node):
             arr_of_node_count.append('{"{#NODELEN}": "%d"}' % coun)
         print('{"data"}:[%s]}' % ret_data_substr.join(arr_of_node_count))
