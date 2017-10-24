@@ -12,9 +12,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from __future__ import print_function
-import sys
-import re
+
 import pickle
+import re
+import socket
+import sys
+
+
 try:
     import paramiko
 except Exception:
@@ -65,8 +69,8 @@ class Host(object):
                 timeout=self.timeout,
                 port=self.port)
             return self
-        except paramiko.SSHException as sshe:
-            print("Can't connect to host")
+        except (paramiko.SSHException, socket.timeout) as sshe:
+            print("Can't connect to host: ", end='')
             print(sshe)
             self.sshclient.close()
             sys.exit(1)
